@@ -72,7 +72,7 @@
   "homepage": "https://bibleverse.aporkolab.com",
   "dependencies": {
     "@angular/animations": "20.3.33",
-    "@angular/common": "20.3.33",
+    "@angular/common": "20.3.34",
     "@angular/compiler": "20.3.33",
     "@angular/core": "20.3.33",
     "@angular/forms": "20.3.33",
@@ -87,13 +87,13 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "20.3.39",
+    "@angular-devkit/build-angular": "22.2.3",
     "@angular-eslint/builder": "20.2.0",
     "@angular-eslint/eslint-plugin": "20.2.0",
     "@angular-eslint/eslint-plugin-template": "20.2.0",
     "@angular-eslint/schematics": "20.2.0",
     "@angular-eslint/template-parser": "20.2.0",
-    "@angular/cli": "20.3.39",
+    "@angular/cli": "22.2.3",
     "@angular/compiler-cli": "20.3.33",
     "@types/jasmine": "~5.1.4",
     "@types/node": "^20.11.5",
