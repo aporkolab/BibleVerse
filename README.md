@@ -20,13 +20,13 @@ A modern, enterprise-grade Angular application for Bible verse lookup and naviga
 ## 🏗️ Architecture
 
 ### Tech Stack
-- **Frontend**: Angular 20+ with TypeScript
+- **Frontend**: Angular 22 (standalone components, signals, zoneless change detection) with TypeScript 6.0
 - **Styling**: Bootstrap 5.3+, SCSS
-- **Testing**: Jasmine, Karma, Jest
-- **Build**: Angular CLI, webpack
+- **Testing**: Vitest (via `@angular/build:unit-test`, jsdom)
+- **Build**: Angular CLI, esbuild application builder (`@angular/build`)
 - **CI/CD**: GitHub Actions
 - **Containerization**: Docker, Kubernetes
-- **Quality**: ESLint, Prettier, SonarQube
+- **Quality**: ESLint 10 (flat config, angular-eslint), Prettier, SonarQube
 - **Security**: OWASP, Trivy, npm audit
 
 ### Project Structure
@@ -50,7 +50,7 @@ bibleverse/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20+ LTS
+- Node.js 22.22.3+ or 24.15.0+ (required by Angular CLI 22; CI uses Node 24)
 - npm 10+
 - Git
 - Docker (optional)
@@ -82,9 +82,9 @@ npm run build:staging      # Staging build
 npm run build:production   # Production build
 
 # Testing
-npm run test              # Run unit tests
-npm run test:coverage     # Run with coverage
-npm run e2e               # Run E2E tests
+npm run test              # Run unit tests (Vitest, watch mode)
+npm run test:unit         # Run unit tests once
+npm run test:coverage     # Run with coverage (coverage/bibleverse)
 
 # Code quality
 npm run lint              # Run ESLint
@@ -107,18 +107,17 @@ docker run -p 8080:8080 bibleverse:latest
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Environment Configuration
+
+The app does not read runtime environment variables. Settings such as the API base URL
+(`api.baseUrl`) live in `src/environments/environment*.ts` and are selected by the build
+configuration (`development`, `staging`, `production`).
+
+Docker build arguments:
 
 ```bash
-# Development
-NODE_ENV=development
-ENVIRONMENT=development
-API_BASE_URL=https://szentiras.hu/api
-
-# Production
-NODE_ENV=production
-ENVIRONMENT=production
-ANALYTICS_ID=your-analytics-id
+VERSION=<image version label>
+ENVIRONMENT=<development|staging|production>   # selects npm run build:<ENVIRONMENT>
 ```
 
 ### Build Configurations
@@ -137,7 +136,7 @@ ANALYTICS_ID=your-analytics-id
 - 🌍 Responsive design for all devices
 
 ### Technical Features
-- ⚡ Angular 18+ with TypeScript
+- ⚡ Angular 22 with TypeScript
 - 🎨 Bootstrap 5.3+ styling
 - 🔒 Enterprise-grade security
 - 📊 Comprehensive monitoring
@@ -148,25 +147,21 @@ ANALYTICS_ID=your-analytics-id
 ## 🧪 Testing
 
 ### Test Coverage
-- Unit Tests: 80%+ coverage required
-- Integration Tests: API and service integration
-- E2E Tests: Complete user workflows
-- Security Tests: Vulnerability scanning
+- Unit Tests (Vitest): services, reference builders and all components; 80%+ coverage required
+- Security Tests: npm audit and Trivy image scanning in CI
 
 ### Running Tests
 
 ```bash
-# All tests
+# Watch mode
 npm run test
 
-# Specific test types
-npm run test:unit         # Unit tests only
-npm run test:integration  # Integration tests
-npm run e2e:headless      # E2E tests (headless)
+# Single run
+npm run test:unit
 
 # Coverage report
 npm run test:coverage
-open coverage/index.html
+open coverage/bibleverse/index.html
 ```
 
 ## 🚀 Deployment
@@ -182,7 +177,7 @@ open coverage/index.html
 Automated deployment via GitHub Actions:
 1. Code quality checks (ESLint, Prettier)
 2. Security scanning (Trivy, npm audit)
-3. Testing (unit, integration, E2E)
+3. Testing (unit tests with coverage)
 4. Docker build and push
 5. Kubernetes deployment
 6. Health checks and notifications

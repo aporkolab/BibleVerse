@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🔧 Changed
+- Upgraded Angular 20 → 22, TypeScript 5.8 → 6.0, ESLint 8 → 10 (flat config), Bootstrap 5.3.8
+- Migrated to the esbuild application builder, standalone bootstrap (`bootstrapApplication`) and zoneless change detection
+- Replaced Karma/Jasmine (and the unused Jest setup) with Vitest via `@angular/build:unit-test`
+- Components use signals, `inject()`, `OnPush` and the built-in control flow
+- CI runs on Node 24 with current GitHub Actions majors; lint, format and unit tests now block the pipeline
+- Removed unused dependencies: jQuery, ngx-bootstrap, Cypress, Jest, zone.js, `@angular/animations`, `@angular/platform-browser-dynamic`
+
+### 🐛 Fixed
+- Random verse generator could freeze the browser (infinite loop) when the first verse was the last verse of the chapter
+- Random verse could request non-existent chapters for Dániel and Joel (`NaN` references)
+- Random verse requests used the `1,2-1.5` form, which the API answers with only the last verse
+- Multi-chapter selection sent the end chapter instead of the end verse
+- Search terms and references are now URL-encoded; empty API results show a message instead of a blank page
+
 ### 🎯 Planned
 - Multi-language support (English, German)
 - Advanced search filters

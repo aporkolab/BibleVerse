@@ -1,19 +1,29 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Verse } from 'src/app/model/verse';
-import { BaseService } from 'src/app/service/base.service';
+
+import { BaseService } from '../../service/base.service';
+
+interface BookOption {
+  value: string;
+  display: string;
+}
+
+const INVALID_PARAMS = 'Érvénytelen paraméterek. Kérem ellenőrizze!';
+const NOT_FOUND = 'Nincs ilyen igehely, kérem válasszon másikat!';
 
 @Component({
   selector: 'app-select-verse',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './select-verse.component.html',
-  styleUrls: ['./select-verse.component.scss'],
+  styleUrl: './select-verse.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectVerseComponent {
-  showInputs = false;
-  books = [
+  private readonly baseService = inject(BaseService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly books: readonly BookOption[] = [
     { value: 'Ter', display: 'Teremtés könyve' },
     { value: 'Kiv', display: 'Kivonulás könyve' },
     { value: 'Lev', display: 'Leviták könyve' },
@@ -88,36 +98,43 @@ export class SelectVerseComponent {
     { value: 'Júd', display: 'Júdás levele' },
     { value: 'Jel', display: 'János jelenései' },
   ];
-  selectedBook = this.books[0].value;
-  fromChapter!: number;
-  fromVerse!: number;
-  toChapter!: number;
-  toVerse!: number;
-  selectedVerse!: Verse;
-  finalText = '';
 
-  constructor(private baseService: BaseService) {}
+  readonly showInputs = signal(false);
+  readonly selectedBook = signal(this.books[0].value);
+  readonly fromChapter = signal<number | null>(null);
+  readonly fromVerse = signal<number | null>(null);
+  readonly toChapter = signal<number | null>(null);
+  readonly toVerse = signal<number | null>(null);
+  readonly finalText = signal('');
 
-  getSelectedVerses(selectedBook: string, fromChapter: number, fromVerse: number, toChapter?: number, toVerse?: number): void {
-    this.finalText = '';
+  getSelectedVerses(): void {
+    this.finalText.set('');
+
+    const book = this.selectedBook();
+    const fromChapter = this.fromChapter();
+    const fromVerse = this.fromVerse();
+    const toChapter = this.showInputs() ? this.toChapter() : null;
+    const toVerse = this.showInputs() ? this.toVerse() : null;
+
+    if (!fromChapter || !fromVerse || fromChapter < 1 || fromVerse < 1) {
+      alert(INVALID_PARAMS);
+      return;
+    }
     if (toChapter && toChapter < fromChapter) {
-      alert('Érvénytelen paraméterek. Kérem ellenőrizze!');
+      alert(INVALID_PARAMS);
       return;
     }
-    if (toChapter === fromChapter && toVerse && toVerse < fromVerse) {
-      alert('Érvénytelen paraméterek. Kérem ellenőrizze!');
+    if ((!toChapter || toChapter === fromChapter) && toVerse && toVerse < fromVerse) {
+      alert(INVALID_PARAMS);
       return;
     }
-    this.baseService.getSelectedVerses(selectedBook, fromChapter, fromVerse, toChapter, toVerse).subscribe({
-      next: (data: Verse) => {
-        // A visszakapott adatokat itt kezeljük (pl. megjelenítjük a felhasználó számára)
-        this.finalText = data.text;
-      },
-      error: e => (this.finalText = 'Nincs ilyen igehely, kérem válasszon másikat!'),
-    });
-    fromChapter = 0;
-    fromVerse = 0;
-    toChapter = 0;
-    toVerse = 0;
+
+    this.baseService
+      .getSelectedVerses(book, fromChapter, fromVerse, toChapter, toVerse)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: data => this.finalText.set(data?.text || NOT_FOUND),
+        error: () => this.finalText.set(NOT_FOUND),
+      });
   }
 }

@@ -61,7 +61,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
       args:
-        NODE_VERSION: 20
+        NODE_VERSION: 24
     container_name: bibleverse-dev
     ports:
       - "4200:4200"
@@ -87,7 +87,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
       args:
-        NODE_VERSION: 20
+        NODE_VERSION: 24
     container_name: bibleverse-test
     volumes:
       - .:/app

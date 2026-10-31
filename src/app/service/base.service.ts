@@ -1,85 +1,69 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, retry } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Verse } from '../model/verse';
-import * as allBook from './../../assets/json/bible.json';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { environment } from '../../environments/environment';
+import bibleBooks from '../../assets/json/bible.json';
+import { BibleBook, SearchResponse, Verse } from '../model/verse';
+
+/**
+ * Builds a random reference of at least two consecutive verses within one chapter,
+ * e.g. `Ter1,3-7`. `random` must return values in [0, 1) like `Math.random`.
+ */
+export const buildRandomReference = (books: readonly BibleBook[], random: () => number = Math.random): string => {
+  const book = books[Math.floor(random() * books.length)];
+  const chapterIndex = Math.floor(random() * book.chapterVersesNumber.length);
+  const chapter = book.chapterVersesNumber[chapterIndex];
+  const totalVerses = Number(chapter.total);
+
+  const firstVerse = 1 + Math.floor(random() * (totalVerses - 1));
+  const lastVerse = firstVerse + 1 + Math.floor(random() * (totalVerses - firstVerse));
+
+  return `${book.bookName}${Number(chapter.num)},${firstVerse}-${lastVerse}`;
+};
+
+/** Builds a szentiras.hu reference such as `Jn3,16`, `Jn3,16-18` or `Jn3,16-4,2`. */
+export const buildSelectedReference = (
+  book: string,
+  fromChapter: number,
+  fromVerse: number,
+  toChapter?: number | null,
+  toVerse?: number | null
+): string => {
+  let reference = `${book}${fromChapter},${fromVerse}`;
+  if (toVerse) {
+    reference += !toChapter || toChapter === fromChapter ? `-${toVerse}` : `-${toChapter},${toVerse}`;
+  }
+  return reference;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class BaseService {
-  apiUrl: string = 'https://szentiras.hu/api/ref';
-  entity: string = '';
-  // list$: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
-  randomItem: any | number | string;
-  allBook: any = (allBook as any).default;
-
-  constructor(private http: HttpClient) {}
-
-  getAllVerse(book: string): Observable<Verse> {
-    return this.http.get<Verse>(`https://szentiras.hu/KNB/${book}`);
-  }
-
-  getOneVerse(book: string | number, fromVerse: string | number, toVerse: string | number): Observable<Verse> {
-    return this.http.get<Verse>(`${this.apiUrl}/${book} ${fromVerse}-${toVerse}`);
-  }
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.api.baseUrl;
+  private readonly books = bibleBooks as BibleBook[];
 
   getRandomVerse(): Observable<Verse> {
-    // Előzetes betöltés
-    const allBook = this.allBook;
-    const apiUrl = this.apiUrl;
-
-    // Változók előzetes betöltése
-    const randomItem = allBook[Math.floor(Math.random() * allBook.length)];
-    const randomChapter = Math.floor(Math.random() * randomItem.totalChapterNumber + 1);
-    const totalVerseInThisChapter = randomItem.chapterVersesNumber[randomChapter - 1]?.total;
-
-    // Változók előzetes beállítása
-    let firstVerse = Math.floor(Math.random() * totalVerseInThisChapter + 1);
-    let lastVerse = firstVerse;
-
-    // While ciklus használata
-    while (lastVerse <= firstVerse) {
-      lastVerse = Math.floor(Math.random() * totalVerseInThisChapter + 1);
-    }
-
-    // HTTP hívás
-    return this.http.get<Verse>(`${apiUrl}/${randomItem.bookName}${randomChapter},${firstVerse}-${randomChapter}.${lastVerse}`);
-  }
-
-  getSearchedVerses(word: string): Observable<Verse> {
-    return this.http.get<Verse>(`https://szentiras.hu/api/search/${word}`);
+    return this.getReference(buildRandomReference(this.books));
   }
 
   getSelectedVerses(
-    book: string | number,
-    fromChapter: string | number,
-    fromVerse: string | number,
-    toChapter?: string | number,
-    toVerse?: string | number
+    book: string,
+    fromChapter: number,
+    fromVerse: number,
+    toChapter?: number | null,
+    toVerse?: number | null
   ): Observable<Verse> {
-    let query = `${this.apiUrl}/${book}${fromChapter},${fromVerse}`;
-
-    if (toChapter && toVerse) {
-      query += `-${toChapter},${toChapter}`;
-    }
-
-    return this.http.get<Verse>(query);
+    return this.getReference(buildSelectedReference(book, fromChapter, fromVerse, toChapter, toVerse));
   }
 
-  // A program elvileg képes lenne teljes mértékben, közvetlenül kezelni az adatbázis CRUD műveleteit. Jelenleg csupán a lekérést használjuk.
-  // create(entity: T): Observable<T> {
-  //   const newEntity = { ...entity, _id: null };
-  //   return this.http.post<T>(`${this.apiUrl}/${this.entity}`, newEntity);
-  // }
+  getSearchedVerses(word: string): Observable<SearchResponse> {
+    return this.http.get<SearchResponse>(`${this.apiUrl}/search/${encodeURIComponent(word.trim())}`);
+  }
 
-  // update(entity: T): Observable<T> {
-  //   return this.http.patch<T>(
-  //     `${this.apiUrl}/${this.entity}/select/${entity._id}`,
-  //     entity
-  //   );
-  // }
-
-  // delete(entity: T): Observable<T> {
-  //   return this.http.delete<T>(`${this.apiUrl}/${this.entity}/${entity._id}`);
-  // }
+  private getReference(reference: string): Observable<Verse> {
+    return this.http.get<Verse>(`${this.apiUrl}/ref/${encodeURIComponent(reference)}`);
+  }
 }

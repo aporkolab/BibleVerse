@@ -1,40 +1,52 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { Verse } from 'src/app/model/verse';
-import { BaseService } from 'src/app/service/base.service';
+
+import { SearchResult } from '../../model/verse';
+import { BaseService } from '../../service/base.service';
 
 @Component({
   selector: 'app-search-verse',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './search-verse.component.html',
-  styleUrls: ['./search-verse.component.scss'],
+  styleUrl: './search-verse.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchVerseComponent implements OnInit {
-  searchWord = '';
-  hitCount = 0;
-  verseData!: any;
-  Object: any;
+export class SearchVerseComponent {
+  private readonly baseService = inject(BaseService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private baseService: BaseService) {}
+  readonly searchWord = signal('');
+  readonly hitCount = signal(0);
+  readonly verseData = signal<SearchResult[] | null>(null);
+  readonly errorMessage = signal('');
 
-  ngOnInit() {}
+  search(word: string): void {
+    this.verseData.set(null);
+    this.hitCount.set(0);
+    this.errorMessage.set('');
 
-  search(word: string) {
-    this.verseData = '';
-    this.hitCount = 0;
-    this.baseService.getSearchedVerses(word).subscribe({
-      next: (data: any) => {
-        // A visszakapott adatokat itt kezeljük (pl. megjelenítjük a felhasználó számára)
-        this.verseData = JSON.parse(JSON.stringify(data.fullTextResult.results));
-        this.hitCount = data.fullTextResult.hitCount;
-      },
-      error: e => console.error(e),
-    });
+    if (!word.trim()) {
+      this.errorMessage.set('Kérem adjon meg egy keresési kifejezést!');
+      return;
+    }
+
+    this.baseService
+      .getSearchedVerses(word)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: data => {
+          this.verseData.set(data.fullTextResult?.results ?? []);
+          this.hitCount.set(data.fullTextResult?.hitCount ?? 0);
+        },
+        error: (e: unknown) => {
+          console.error(e);
+          this.errorMessage.set('A keresés sikertelen, kérem próbálja újra később!');
+        },
+      });
   }
-  scrollToTop() {
+
+  scrollToTop(): void {
     window.scrollTo(0, 0);
   }
 }

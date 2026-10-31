@@ -44,10 +44,8 @@ graph TD
 - **Security audit** - npm vulnerability scanning
 
 ### 3. 🧪 Testing Suite
-- **Unit tests** - Component and service testing
-- **Integration tests** - API and service integration
-- **E2E tests** - End-to-end user workflows
-- **Coverage reports** - Code coverage analysis
+- **Unit tests** - Component and service testing (Vitest, Node 24)
+- **Coverage reports** - Code coverage analysis (lcov uploaded to Codecov)
 
 ### 4. 🏗️ Build Application
 - **Multi-environment builds** - Development, staging, production
@@ -105,7 +103,7 @@ graph TD
 - **Performance**: Bundle size under limits
 
 ### Deployment Gates
-- **All tests pass**: Unit, integration, E2E
+- **All tests pass**: Unit tests (lint and Prettier also block the pipeline)
 - **Quality gates pass**: SonarQube quality gate
 - **Security scan clean**: No critical vulnerabilities
 - **Manual approval**: Production deployments
