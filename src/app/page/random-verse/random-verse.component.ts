@@ -1,27 +1,38 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Verse } from 'src/app/model/verse';
-import { BaseService } from 'src/app/service/base.service';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { Verse } from '../../model/verse';
+import { BaseService } from '../../service/base.service';
 
 @Component({
   selector: 'app-random-verse',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './random-verse.component.html',
-  styleUrls: ['./random-verse.component.scss'],
+  styleUrl: './random-verse.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RandomVerseComponent implements OnInit {
-  @Input()
-  randVerse!: Verse;
+  private readonly baseService = inject(BaseService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private baseService: BaseService) {}
+  readonly randVerse = signal<Verse | null>(null);
+  readonly errorMessage = signal('');
 
   ngOnInit(): void {
-    this.baseService.getRandomVerse().subscribe({
-      next: (data: Verse) => {
-        this.randVerse = data;
-      },
-      error: e => console.error(e),
-    });
+    this.baseService
+      .getRandomVerse()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: data => {
+          if (data?.text) {
+            this.randVerse.set(data);
+          } else {
+            this.errorMessage.set('Nem sikerült igehelyet betölteni, kérem frissítse az oldalt!');
+          }
+        },
+        error: (e: unknown) => {
+          console.error(e);
+          this.errorMessage.set('Nem sikerült igehelyet betölteni, kérem frissítse az oldalt!');
+        },
+      });
   }
 }
