@@ -1,22 +1,18 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { NavbarComponent } from './navbar.component';
 
 describe('NavbarComponent', () => {
-  let component: NavbarComponent;
-  let fixture: ComponentFixture<NavbarComponent>;
-
-  beforeEach(async () => {
+  it('links to every page', async () => {
     await TestBed.configureTestingModule({
-      declarations: [NavbarComponent],
+      imports: [NavbarComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
+    const fixture = TestBed.createComponent(NavbarComponent);
+    await fixture.whenStable();
 
-    fixture = TestBed.createComponent(NavbarComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    const hrefs = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('a.nav-link')).map(a => a.getAttribute('href'));
+    expect(hrefs).toEqual(['/randomVerse', '/selectVerse', '/searchVerse', '/contact']);
   });
 });
