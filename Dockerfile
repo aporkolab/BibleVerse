@@ -5,7 +5,7 @@
 # ==========================================
 # Build Stage
 # ==========================================
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -14,7 +14,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (needed for build)
-RUN npm ci --no-audit --no-fund --legacy-peer-deps
+RUN npm ci --no-audit --no-fund
 
 # Copy source code
 COPY . .
@@ -33,7 +33,7 @@ RUN npm run build:${ENVIRONMENT}
 # ==========================================
 # Production Stage
 # ==========================================
-FROM nginx:1.25-alpine AS production
+FROM nginx:stable-alpine AS production
 
 # Install security updates
 RUN apk upgrade --no-cache && \

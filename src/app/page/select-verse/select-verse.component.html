@@ -13,14 +13,19 @@
               <select
                 [(ngModel)]="selectedBook"
                 name="book"
+                aria-label="Könyv"
                 class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
               >
-                <option *ngFor="let b of books" [value]="b.value">{{ b.display }}</option>
+                @for (b of books; track b.value) {
+                  <option [value]="b.value">{{ b.display }}</option>
+                }
               </select>
               <br />
               <br />
-              <input type="checkbox" [(ngModel)]="showInputs" />
-              Több vers
+              <label>
+                <input type="checkbox" [(ngModel)]="showInputs" />
+                Több vers
+              </label>
               <br />
               <br />
             </p>
@@ -49,44 +54,41 @@
                     />
                   </td>
                 </tr>
-                <tr *ngIf="showInputs">
-                  <td>
-                    <label for="toChapter">Fejezet száma (több vers esetén a vég):</label>
-                    <input
-                      type="number"
-                      id="toChapter"
-                      name="toChapter"
-                      [(ngModel)]="toChapter"
-                      class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
-                    />
-                  </td>
-                  <td>
-                    <label for="toVerse">Vers száma (több vers esetén a vég):</label>
-                    <input
-                      type="number"
-                      id="toVerse"
-                      name="toVerse"
-                      [(ngModel)]="toVerse"
-                      class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
-                    />
-                  </td>
-                </tr>
+                @if (showInputs()) {
+                  <tr>
+                    <td>
+                      <label for="toChapter">Fejezet száma (több vers esetén a vég):</label>
+                      <input
+                        type="number"
+                        id="toChapter"
+                        name="toChapter"
+                        [(ngModel)]="toChapter"
+                        class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
+                      />
+                    </td>
+                    <td>
+                      <label for="toVerse">Vers száma (több vers esetén a vég):</label>
+                      <input
+                        type="number"
+                        id="toVerse"
+                        name="toVerse"
+                        [(ngModel)]="toVerse"
+                        class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
+                      />
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
 
             <br />
             <br />
 
-            <button
-              (click)="getSelectedVerses(selectedBook, fromChapter, fromVerse, toChapter, toVerse)"
-              class="btn btn-dark"
-            >
-              Válassz igehelyet
-            </button>
+            <button type="button" (click)="getSelectedVerses()" class="btn btn-dark">Válassz igehelyet</button>
 
             <br />
             <br />
-            <h5>{{ finalText }}</h5>
+            <h5>{{ finalText() }}</h5>
           </div>
         </div>
       </div>

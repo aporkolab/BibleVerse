@@ -1,27 +1,23 @@
-import { Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
 import { NavbarComponent } from './common/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [RouterOutlet, NavbarComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  title = 'bibleverse';
-  @ViewChild('bgVideo') bgVideo!: HTMLVideoElement;
+  readonly title = 'bibleverse';
 
-  ngOnInit() {
-    console.log(this.bgVideo);
-  }
-
-  toggleVideo(vid: HTMLMediaElement) {
-    if (vid.paused == true) {
-      vid.play();
+  toggleVideo(video: HTMLMediaElement): void {
+    if (video.paused) {
+      void video.play();
     } else {
-      vid.pause();
+      video.pause();
     }
   }
 }

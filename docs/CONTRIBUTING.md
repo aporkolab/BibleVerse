@@ -31,9 +31,9 @@ This project adheres to a code of conduct adapted from the Contributor Covenant.
 
 ### Prerequisites
 
-- Node.js 20+ and npm
+- Node.js 22.22.3+ or 24.15.0+ and npm
 - Git
-- Angular CLI (`npm install -g @angular/cli`)
+- Angular CLI is used from `node_modules` (`npx ng ...`); a global install is optional
 - Docker (optional, for containerized development)
 
 ### First Contribution
@@ -147,9 +147,6 @@ npm run test:unit
 # Run with coverage
 npm run test:coverage
 
-# Run E2E tests
-npm run e2e
-
 # Run all quality checks
 npm run ci:quality
 ```
@@ -189,7 +186,7 @@ describe('VerseService', () => {
 ### Linting
 
 - Use **ESLint** for code quality
-- Configuration in `.eslintrc.json`
+- Configuration in `eslint.config.js` (flat config)
 - Run `npm run lint` to check code
 - Run `npm run lint:fix` to auto-fix issues
 

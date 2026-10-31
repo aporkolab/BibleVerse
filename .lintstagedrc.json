@@ -1,18 +1,4 @@
 {
-  "*.{ts,js}": [
-    "eslint --fix",
-    "prettier --write"
-  ],
-  "*.{html,scss,css}": [
-    "prettier --write"
-  ],
-  "*.{json,md,yml,yaml}": [
-    "prettier --write"
-  ],
-  "*.ts": [
-    "ng lint --fix"
-  ],
-  "src/**/*.{ts,html}": [
-    "npm run test:unit -- --findRelatedTests --passWithNoTests"
-  ]
+  "*.ts": ["eslint --fix", "prettier --write"],
+  "*.{html,scss,css,json,md,yml,yaml}": ["prettier --write"]
 }

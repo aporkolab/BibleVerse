@@ -13,6 +13,7 @@
               <input
                 name="name"
                 [(ngModel)]="searchWord"
+                aria-label="Keresési kifejezés"
                 type="text"
                 class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
                 placeholder="Mit keressek?"
@@ -24,42 +25,53 @@
           <br />
           <br />
           <div class="input-group justify-content-end">
-            <button type="button" (click)="search(searchWord)" class="btn btn-dark">
+            <button type="button" (click)="search(searchWord())" class="btn btn-dark">
               Kifejezés keresése a Biblában
             </button>
           </div>
           <br />
-          <div *ngIf="verseData">A összes találat száma: {{ hitCount }}</div>
+          @if (errorMessage()) {
+            <div class="error-message">{{ errorMessage() }}</div>
+          }
+          @if (verseData()) {
+            <div>Az összes találat száma: {{ hitCount() }}</div>
+          }
           <br />
           <br />
           <div class="table-responsive">
-            <table class="mb-4 striped" *ngIf="verseData">
-              <thead>
-                <tr>
-                  <!-- <th>Sorszám</th> -->
-                  <th>Könyv</th>
-                  <th>Fordítás</th>
-                  <th>Fejezet</th>
-                  <th>Versek</th>
-                  <th>Szöveg</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngFor="let verse of verseData; index as i">
-                  <tr *ngFor="let v of verse.verses">
-                    <!-- <td>{{ i + 1 }}</td> -->
-                    <td>{{ verse.book.name }}</td>
-                    <td>{{ verse.translation.name }}</td>
-                    <td>{{ v.chapter }}</td>
-                    <td>{{ v.numv }}</td>
-                    <td>{{ v.text }}</td>
+            @if (verseData(); as results) {
+              <table class="mb-4 striped">
+                <thead>
+                  <tr>
+                    <!-- <th>Sorszám</th> -->
+                    <th>Könyv</th>
+                    <th>Fordítás</th>
+                    <th>Fejezet</th>
+                    <th>Versek</th>
+                    <th>Szöveg</th>
                   </tr>
-                </ng-container>
-              </tbody>
-            </table>
-            <div class="text-center" *ngIf="verseData">
-              <button (click)="scrollToTop()" class="btn btn-dark">Ugrás az oldal tetejére</button>
-            </div>
+                </thead>
+                <tbody>
+                  @for (verse of results; track $index) {
+                    @for (v of verse.verses; track $index) {
+                      <tr>
+                        <!-- <td>{{ i + 1 }}</td> -->
+                        <td>{{ verse.book.name }}</td>
+                        <td>{{ verse.translation.name }}</td>
+                        <td>{{ v.chapter }}</td>
+                        <td>{{ v.numv }}</td>
+                        <td>{{ v.text }}</td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            }
+            @if (verseData()) {
+              <div class="text-center">
+                <button type="button" (click)="scrollToTop()" class="btn btn-dark">Ugrás az oldal tetejére</button>
+              </div>
+            }
           </div>
         </div>
       </div>
