@@ -68,7 +68,7 @@ log_info "Checking prerequisites..."
 MISSING_DEPS=0
 
 if ! check_command "node"; then
-    log_error "Please install Node.js 20+ from https://nodejs.org/"
+    log_error "Please install Node.js 22.22.3+ (or 24 LTS) from https://nodejs.org/"
     MISSING_DEPS=1
 fi
 
@@ -85,8 +85,8 @@ fi
 if command -v node &> /dev/null; then
     NODE_VERSION=$(node --version | sed 's/v//')
     MAJOR_VERSION=$(echo $NODE_VERSION | cut -d. -f1)
-    if [ "$MAJOR_VERSION" -lt 20 ]; then
-        log_error "Node.js version $NODE_VERSION detected. Please install Node.js 20+ LTS"
+    if [ "$MAJOR_VERSION" -lt 22 ]; then
+        log_error "Node.js version $NODE_VERSION detected. Please install Node.js 22.22.3+ (or 24 LTS) LTS"
         MISSING_DEPS=1
     else
         log_success "Node.js $NODE_VERSION is compatible"
